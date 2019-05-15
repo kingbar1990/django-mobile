@@ -1,7 +1,4 @@
-try:
-    from django.conf.urls.defaults import *
-except ImportError:
-    from django.conf.urls import *
+from django.urls import re_path
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django_mobile.cache import cache_page
@@ -12,7 +9,7 @@ def index(request):
     }, context_instance=RequestContext(request))
 
 
-urlpatterns = patterns('',
-    url(r'^$', index),
-    url(r'^cached/$', cache_page(60*10)(index)),
-)
+urlpatterns = [
+    re_path(r'^$', index),
+    re_path(r'^cached/$', cache_page(60*10)(index)),
+]
