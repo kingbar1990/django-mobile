@@ -3,7 +3,11 @@ from django.template import TemplateDoesNotExist
 from django.template.loaders.cached import Loader as DjangoCachedLoader
 from django_mobile import get_flavour
 from django_mobile.conf import settings
-from django_mobile.compat import BaseLoader, template_loader, template_from_string
+from django_mobile.compat import (
+    BaseLoader,
+    template_loader,
+    template_from_string
+)
 from django.utils.encoding import force_bytes
 
 
@@ -14,13 +18,12 @@ class Loader(BaseLoader):
     def get_contents(self, origin):
         return origin.loader.get_contents(origin)
 
-    def get_template_sources(self, template_name, template_dirs=None):
+    def get_template_sources(self, template_name):
         template_name = self.prepare_template_name(template_name)
         for loader in self.template_source_loaders:
             if hasattr(loader, 'get_template_sources'):
                 try:
-                    for result in loader.get_template_sources(template_name, template_dirs):
-                        yield result
+                    yield from loader.get_template_sources(template_name)
                 except UnicodeDecodeError:
                     # The template dir name was a bytestring that wasn't valid UTF-8.
                     raise
@@ -36,23 +39,21 @@ class Loader(BaseLoader):
             template_name = settings.FLAVOURS_TEMPLATE_PREFIX + template_name
         return template_name
 
-    def load_template(self, template_name, template_dirs=None):
+    def load_template(self, template_name):
         template_name = self.prepare_template_name(template_name)
         for loader in self.template_source_loaders:
             try:
-                return loader(template_name, template_dirs)
+                return loader(template_name)
             except TemplateDoesNotExist:
                 pass
         raise TemplateDoesNotExist("Tried %s" % template_name)
 
-    def load_template_source(self, template_name, template_dirs=None):
+    def load_template_source(self, template_name):
         template_name = self.prepare_template_name(template_name)
         for loader in self.template_source_loaders:
             if hasattr(loader, 'load_template_source'):
                 try:
-                    return loader.load_template_source(
-                        template_name,
-                        template_dirs)
+                    return loader.load_template_source(template_name)
                 except TemplateDoesNotExist:
                     pass
         raise TemplateDoesNotExist("Tried %s" % template_name)
