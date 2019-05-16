@@ -25,12 +25,8 @@ class Loader(BaseLoader):
                 try:
                     yield from loader.get_template_sources(template_name)
                 except UnicodeDecodeError:
-                    # The template dir name was a bytestring that wasn't valid UTF-8.
                     raise
                 except ValueError:
-                    # The joined path was located outside of this particular
-                    # template_dir (it might be inside another one, so this isn't
-                    # fatal).
                     pass
 
     def prepare_template_name(self, template_name):
@@ -73,28 +69,22 @@ class Loader(BaseLoader):
 class CachedLoader(DjangoCachedLoader):
     is_usable = True
 
-    def cache_key(self, template_name, template_dirs, *args):
+    def cache_key(self, template_name, *args):
         if len(args) > 0:  # Django >= 1.9
-            key = super(CachedLoader, self).cache_key(template_name, template_dirs, *args)
+            key = super(CachedLoader, self).cache_key(template_name, *args)
         else:
-            if template_dirs:
-                key = '-'.join([
-                    template_name,
-                    hashlib.sha1(force_bytes('|'.join(template_dirs))).hexdigest()
-                ])
-            else:
-                key = template_name
+            key = template_name
 
         return '{0}:{1}'.format(get_flavour(), key)
 
-    def load_template(self, template_name, template_dirs=None):
-        key = self.cache_key(template_name, template_dirs)
+    def load_template(self, template_name):
+        key = self.cache_key(template_name)
         template_tuple = self.template_cache.get(key)
 
         if template_tuple is TemplateDoesNotExist:
             raise TemplateDoesNotExist('Template not found: %s' % template_name)
         elif template_tuple is None:
-            template, origin = self.find_template(template_name, template_dirs)
+            template, origin = self.find_template(template_name)
             if not hasattr(template, 'render'):
                 try:
                     template = template_from_string(template)

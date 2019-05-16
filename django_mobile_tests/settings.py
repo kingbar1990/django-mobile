@@ -32,6 +32,9 @@ MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
 MEDIA_URL = '/media/'
 
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = '/static/'
+
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
 # Examples: "http://foo.com/media/", "/media/".
@@ -52,8 +55,10 @@ TEMPLATES = [
         ],
         'OPTIONS': {
             'context_processors': [
-                    "django.contrib.auth.context_processors.auth",
                     "django.template.context_processors.debug",
+                    'django.template.context_processors.request',
+                    "django.contrib.auth.context_processors.auth",
+                    'django.contrib.messages.context_processors.messages',
                     "django.template.context_processors.i18n",
                     "django.template.context_processors.media",
                     "django_mobile.context_processors.flavour",
@@ -69,11 +74,15 @@ TEMPLATES = [
         },
     },
 ]
-
+TEMPLATE_LOADERS = TEMPLATES[0]['OPTIONS']['loaders']
 MIDDLEWARE = (
-    'django.middleware.common.CommonMiddleware',
+    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_mobile.middleware.MobileDetectionMiddleware',
     'django_mobile.middleware.SetFlavourMiddleware',
 )
@@ -83,16 +92,16 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.contrib.sites',
-    'django.contrib.admin',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
 
     'django_mobile',
     'django_mobile_tests',
 )
-
 
 import django
 if django.VERSION < (1, 6):

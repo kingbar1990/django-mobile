@@ -43,10 +43,10 @@ class MobileDetectionMiddleware(MiddlewareMixin):
     user_agents_exception_search = u"(?:%s)" % u'|'.join((
         'ipad',
     ))
-    http_accept_regex = re.compile("application/vnd\.wap\.xhtml\+xml", re.IGNORECASE)
+    http_accept_regex = re.compile("application/vnd.wap.xhtml+xml", re.IGNORECASE)
 
-    def __init__(self, get_response):
-        self.get_response = get_response
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         user_agents_test_match = r'^(?:%s)' % '|'.join(self.user_agents_test_match)
         self.user_agents_test_match_regex = re.compile(user_agents_test_match, re.IGNORECASE)
@@ -56,7 +56,7 @@ class MobileDetectionMiddleware(MiddlewareMixin):
     def process_request(self, request):
         is_mobile = False
 
-        if 'HTTP_USER_AGENT' in request.META :
+        if 'HTTP_USER_AGENT' in request.META:
             user_agent = request.META['HTTP_USER_AGENT']
 
             # Test common mobile values.
@@ -67,7 +67,7 @@ class MobileDetectionMiddleware(MiddlewareMixin):
                 # Nokia like test for WAP browsers.
                 # http://www.developershome.com/wap/xhtmlmp/xhtml_mp_tutorial.asp?page=mimeTypesFileExtension
 
-                if 'HTTP_ACCEPT' in request.META :
+                if 'HTTP_ACCEPT' in request.META:
                     http_accept = request.META['HTTP_ACCEPT']
                     if self.http_accept_regex.search(http_accept):
                         is_mobile = True
